@@ -1,5 +1,15 @@
 $(document).ready(function() {
 
+        function myFunction(id, x){
+         var xr = new XMLHttpRequest();
+         var url = x;
+         var text = document.getElementById(id).innerHTML;
+         var vars = "newText="+text;
+         
+         xr.open("POST", url, true);
+         xr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+         xr.send(vars);
+     }
 
     var arr = $('.wrapper').children(),
         result = $('#result span'),
@@ -7,13 +17,30 @@ $(document).ready(function() {
         timer = $('#timer span'),
         currentScore = $('#score span'),
         totalScore = $('#total span'),
+        record = $('#record span'),
         boxIndex = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         font1 = $('#font1'),
         font2 = $('#font2'),
         font3 = $('#font3'),
-        fontArr,
-        sum,
-        sum2;
+        test = $('#test'),
+        fontArr, // Will dynamically be changed each level and will contain 3 different fonts that will be randomly chosen.
+        sum, // sum and sum2 will be combined "total score" + "current score" for each level after they're switched to type of Number.
+        sum2,
+        name, // Will hold the string value of the new top record player.
+        finish, // Holds the total score value after finishing the game.
+        j = record.html(), // Top record string.
+        k = Number(j.replace(/[^0-9]/g,'')); // Gets only the number in the "Top record" string and turn it into a Number type.
+
+        // console.log(k);
+
+
+        // myFunction will be excuted if a player gets a new top record, the string will briefly be editable, focused, then blurred and uneditable.
+        // Afterwards the new record will be saved into a txt file. The usage of this function is only after finishing the game with a new top record.
+        record.blur(function() {
+            myFunction('test', 'saveNewText.php');
+
+        });
+
 
     //  Shuffle all indexes without duplicates
 
@@ -27,9 +54,11 @@ $(document).ready(function() {
 
     $('.wrapper div').toggleClass('rotate');
 
+    // Initiate level check.
+
     levelFunc();
 
-    // Checking in which level of the game you're in and setting the difficulty in regard.
+    // Checking in which level of the game you're in and setting the difficulty accordingly.
 
     function levelFunc() {
 
@@ -145,7 +174,7 @@ $(document).ready(function() {
                     $('.wrapper div').css({ 'background': 'blue', 'color': 'white', 'font-family': fontArr[Math.floor(Math.random() * 3)]});
                     $('.wrapper div').toggleClass('rotate');
  
-
+                    // After level 1 we initiate a timer and scores logic starts to scale.
                     level.html('2');
                     var count = 20,
                         cScore = 0;
@@ -205,7 +234,6 @@ $(document).ready(function() {
                             currentScore.html('0');
                             levelFunc();
                         }
-
 
                     }, 1000);
                     levelFunc();
@@ -666,18 +694,34 @@ $(document).ready(function() {
                     level.html('Game Complete!');
                     result.html('Nothing else to find!');
                     timer.html('You\'ve beated the time!');
-
                 }, 3000);
 
+                finish = totalScore.html();
+
                 $('.wrapper div').toggleClass('rotate');
+
+            if (Number(finish) < k) {
+                // If we finished the game in a lower time than the last top record, we'll store our name in a variable, display the new top record with our name.
+                name = prompt('New Record!!! Please fill your name below!');
+                setTimeout(function() {
+
+                record.html(name + ', ' + 'finished in ' + finish + ' seconds!');
+                // We save the new record into a file by using the method on line 39.
+                // In order to get our record string blurred, we have to make it editable + focused so we can blur it.
+                $(record).attr('contenteditable','true');
+                record.focus();
+                record.blur();
+                $(record).attr('contenteditable','false');
+
+                }, 2000);
+
+            }
+        
             }
 
         }
 
-
     });
 
-
     // Made completely by Dennis Ilyaev.
-
 });

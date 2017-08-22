@@ -97,6 +97,19 @@
         color: red;
         text-decoration: underline;
     }
+
+    #record {
+        font-size: 15px;
+        text-align: center;
+        margin-top: 10px;
+        font-family: monospace;
+        color: gray;
+    }
+
+    #record span {
+        color: red;
+    }
+
 }
 
 
@@ -195,6 +208,17 @@
         text-decoration: underline;
     }
 
+    #record {
+        font-size: 13px;
+        text-align: center;
+        margin-top: 10px;
+        font-family: monospace;
+        color: gray;
+    }
+
+    #record span {
+        color: red;
+    }
 
 }
 
@@ -240,7 +264,7 @@
     #result {
         font-size: 27px;
         text-align: center;
-        margin-top: 50px;
+        margin-top: 15px;
         color: blue;
         font-weight: bold;
         font-family: monospace;
@@ -289,6 +313,19 @@
         color: red;
         text-decoration: underline;
     }
+
+    #record {
+        font-size: 17px;
+        text-align: center;
+        margin-top: 10px;
+        font-family: monospace;
+        color: gray;
+    }
+
+    #record span {
+        color: red;
+    }
+
 }
 
 
@@ -333,7 +370,7 @@
     #result {
         font-size: 30px;
         text-align: center;
-        margin-top: 50px;
+        margin-top: 30px;
         color: blue;
         font-weight: bold;
         font-family: monospace;
@@ -341,7 +378,6 @@
     #level {
         font-size: 25px;
         text-align: center;
-        margin-top: 10px;
         color: green;
         font-family: monospace;
     }
@@ -351,7 +387,6 @@
     #timer {
         font-size: 25px;
         text-align: center;
-        margin-top: 10px;
         color: red;
         font-family: monospace;
     }
@@ -382,4 +417,17 @@
         color: red;
         text-decoration: underline;
     }
+
+    #record {
+        font-size: 17px;
+        text-align: center;
+        margin-top: 10px;
+        font-family: monospace;
+        color: gray;
+    }
+
+    #record span {
+        color: red;
+    }
+
 }
