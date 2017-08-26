@@ -1,6 +1,6 @@
 $(document).ready(function() {
 
-        function myFunction(id, x){
+    function updateRecord(id, x) {
          var xr = new XMLHttpRequest();
          var url = x;
          var text = document.getElementById(id).innerHTML;
@@ -29,7 +29,7 @@ $(document).ready(function() {
         name, // Will hold the string value of the new top record player.
         finish, // Holds the total score value after finishing the game.
         j = record.html(), // Top record string.
-        k = Number(j.replace(/[^0-9]/g,'')); // Gets only the number in the "Top record" string and turn it into a Number type.
+        k = Number(j.replace(/[^0-9]/g,'')); // Gets only the number in the "Top record" string and turns it into a Number type.
 
         // console.log(k);
 
@@ -37,7 +37,7 @@ $(document).ready(function() {
         // myFunction will be excuted if a player gets a new top record, the string will briefly be editable, focused, then blurred and uneditable.
         // Afterwards the new record will be saved into a txt file. The usage of this function is only after finishing the game with a new top record.
         record.blur(function() {
-            myFunction('test', 'saveNewText.php');
+            updateRecord('topRecord', 'saveNewText.php');
 
         });
 

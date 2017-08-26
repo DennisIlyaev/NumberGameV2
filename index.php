@@ -10,24 +10,6 @@
     <link href='#' rel='stylesheet' id='font1'>
     <link href='#' rel='stylesheet' id='font2'>
     <link href='#' rel='stylesheet' id='font3'>
-
-    <script>
-        
-    function myFunction(id, x){
-         var xr = new XMLHttpRequest();
-         var url = x;
-         var text = document.getElementById(id).innerHTML;
-         var vars = "newText="+text;
-         
-         xr.open("POST", url, true);
-         xr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-         xr.send(vars);
-
-     }
-
-
-    </script>
-    
 </head>
 
 <body>
@@ -51,8 +33,8 @@
     <div id="timer">Timer: <span>unlimited</span></div>
     <div id="score">Current Level Score: <span>0</span></div>
     <div id="total">Total Score: <span>0</span></div>
-    <div id="record">Top Record: <span id='test'>
-        <?php include("myText.txt"); ?>
+    <div id="record">Top Record: <span id='topRecord'>
+        <?php include("topRecord.txt"); ?>
     </span></div>
 
 

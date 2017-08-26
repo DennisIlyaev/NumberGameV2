@@ -1,5 +1,5 @@
 <?php
-$myFile = fopen("myText.txt", "w");
+$myFile = fopen("topRecord.txt", "w");
 $text = $_POST[newText];
 
 fwrite($myFile, $text);
