@@ -22,7 +22,6 @@ $(document).ready(function() {
         font1 = $('#font1'),
         font2 = $('#font2'),
         font3 = $('#font3'),
-        test = $('#test'),
         fontArr, // Will dynamically be changed each level and will contain 3 different fonts that will be randomly chosen.
         sum, // sum and sum2 will be combined "total score" + "current score" for each level after they're switched to type of Number.
         sum2,
