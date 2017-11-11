@@ -1,726 +1,304 @@
 $(document).ready(function() {
 
-    function updateRecord(id, x) {
-         var xr = new XMLHttpRequest();
-         var url = x;
-         var text = document.getElementById(id).innerHTML;
-         var vars = "newText="+text;
-         
-         xr.open("POST", url, true);
-         xr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-         xr.send(vars);
-     }
 
-    var arr = $('.wrapper').children(),
-        result = $('#result span'),
-        level = $('#level span'),
-        timer = $('#timer span'),
-        currentScore = $('#score span'),
-        totalScore = $('#total span'),
-        record = $('#record span'),
-        boxIndex = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-        font1 = $('#font1'),
-        font2 = $('#font2'),
-        font3 = $('#font3'),
-        fontArr, // Will dynamically be changed each level and will contain 3 different fonts that will be randomly chosen.
-        sum, // sum and sum2 will be combined "total score" + "current score" for each level after they're switched to type of Number.
-        sum2,
-        name, // Will hold the string value of the new top record player.
-        finish, // Holds the total score value after finishing the game.
-        j = record.html(), // Top record string.
-        k = Number(j.replace(/[^0-9]/g,'')); // Gets only the number in the "Top record" string and turns it into a Number type.
+    var Module = (function() {
 
-        // console.log(k);
+        var arr = $('.wrapper').children(),
+            result = $('#result span'),
+            level = $('#level span'),
+            timer = $('#timer span'),
+            currentScore = $('#score span'),
+            totalScore = $('#total span'),
+            record = $('#record span'),
+            boxIndex = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], // We'll shuffle those indexes on line 24.
+            font1 = $('#font1'),
+            font2 = $('#font2'),
+            font3 = $('#font3'),
+            fontArr, // Will dynamically be changed each level and will contain 3 different fonts that will be randomly chosen.
+            sum, // sum and sum2 will be combined "total score" + "current score" for each level after they're switched to type of Number.
+            sum2,
+            name, // Will hold the string value of the new top record player's name.
+            finish, // Holds the total score value after finishing the game.
+            j = record.html(), // Top record string.
+            t, // will be our interval function
+            randomIndex = shuffle(boxIndex),
+            k = Number(j.replace(/[^0-9]/g, '')); // Gets only the number in the "Top record" string and turns it into a Number type.
 
 
-        // myFunction will be excuted if a player gets a new top record, the string will briefly be editable, focused, then blurred and uneditable.
-        // Afterwards the new record will be saved into a txt file. The usage of this function is only after finishing the game with a new top record.
+        function updateRecord(id, x) {
+            var xr = new XMLHttpRequest();
+            var url = x;
+            var text = document.getElementById(id).innerHTML;
+            var vars = "newText=" + text;
+
+            xr.open("POST", url, true);
+            xr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xr.send(vars);
+        }
+
+        function shuffle(arr) {
+            for (var j, x, i = arr.length; i; j = parseInt(Math.random() * i), x = arr[--i], arr[i] = arr[j], arr[j] = x);
+            return arr;
+        }
+
+        function setDifficulty(difficulty, index) {
+            for (var i = 0, len = arr.length; i < len; i++) {
+                arr[i].innerHTML = Math.floor((Math.random() * difficulty) + 1);
+                result.html(arr[randomIndex[index]].innerHTML);
+            }
+        }
+
+        function levelFunc() {
+            switch (level.html()) {
+                case '1':
+                    setDifficulty(150, 0);
+                    break;
+                case '2':
+                    setDifficulty(300, 1);
+                    break;
+                case '3':
+                    setDifficulty(450, 2);
+                    break;
+                case '4':
+                    setDifficulty(1650, 3);
+                    break;
+                case '5':
+                    setDifficulty(3450, 4);
+                    break;
+                case '6':
+                    setDifficulty(6400, 5);
+                    break;
+                case '7':
+                    setDifficulty(14000, 6);
+                    break;
+                case '8':
+                    setDifficulty(17000, 7);
+                    break;
+                case '9':
+                    setDifficulty(20000, 8);
+                    break;
+                case '10':
+                    setDifficulty(100000, 9);
+                    break;
+                case '11':
+                    setDifficulty(500000, 10);
+                    break;
+                case '12':
+                    setDifficulty(1000000, 11);
+                    break;
+            }
+        }
+
+        function reset() {
+            $('.wrapper div').css({
+                'background': 'blue',
+                'color': 'white',
+                'font-family': fontArr[Math.floor(Math.random() * 3)]
+            });
+
+            clearInterval(t);
+            if (timer.html() < 0) {
+                alert('Out of time!');
+            } else {
+                alert('Wrong answer!');
+            }
+            $('.wrapper div').css({
+                'font-family': 'serif'
+            });
+            level.html('1');
+            timer.html('unlimited');
+            totalScore.html('0');
+            currentScore.html('0');
+            levelFunc();
+        }
+
+        function complete(result) {
+            if (result) {
+                clearInterval(t);
+                finish = totalScore.html();
+                $('.wrapper div').toggleClass('rotate');
+
+                if (Number(finish) < k) {
+                    name = prompt('New Record!!! Please fill your name below!');
+                    setTimeout(function() {
+
+                        record.html(name + ', ' + 'finished in ' + finish + ' seconds!');
+                        $(record).attr('contenteditable', 'true');
+                        record.focus();
+                        record.blur();
+                        $(record).attr('contenteditable', 'false');
+
+                    }, 2000);
+
+                }
+
+            }
+        }
+
+        function levelChange(result, url1, url2, url3, nameArr, nextLevel, time) {
+            if (result) {
+                clearInterval(t);
+                timer.html('re-calculating...');
+                setTimeout(function() {
+                    font1.attr('href', url1);
+                    font2.attr('href', url2);
+                    font3.attr('href', url3);
+                    fontArr = nameArr;
+
+                    $('.wrapper div').css({
+                        'background': 'blue',
+                        'color': 'white',
+                        'font-family': fontArr[Math.floor(Math.random() * 3)]
+                    });
+                    $('.wrapper div').toggleClass('rotate');
+
+                    level.html(nextLevel);
+                    sum = Number(totalScore.html());
+                    sum2 = Number(currentScore.html());
+                    totalScore.html(sum + sum2);
+                    var count = time,
+                        cScore = 0;
+                    t = setInterval(function() {
+                        timer.html(count);
+                        currentScore.html(cScore);
+                        count--;
+                        cScore++;
+
+                        if (timer.html() < 0) {
+                            reset();
+                        }
+
+
+                    }, 1000);
+                    levelFunc();
+                }, 3000);
+
+                $('.wrapper div').toggleClass('rotate');
+
+
+            } else if (!result) {
+                reset();
+            }
+        }
+
+        function successColor() {
+            $(this).css({
+                'background': 'Chartreuse',
+                'color': 'red'
+            });
+        }
+
         record.blur(function() {
             updateRecord('topRecord', 'saveNewText.php');
 
         });
 
 
-    //  Shuffle all indexes without duplicates
 
-    function shuffle(arr) {
-        for (var j, x, i = arr.length; i; j = parseInt(Math.random() * i), x = arr[--i], arr[i] = arr[j], arr[j] = x);
-        return arr;
-    }
+        // Public API
 
-    var randomIndex = shuffle(boxIndex);
+        return {
+            levelFunc: levelFunc,
+            level: level,
+            timer: timer,
+            levelChange: levelChange,
+            successColor: successColor,
+            result: result,
+            complete: complete
+        };
+
+
+
+
+    }());
+
+
 
 
     $('.wrapper div').toggleClass('rotate');
 
-    // Initiate level check.
-
-    levelFunc();
-
-    // Checking in which level of the game you're in and setting the difficulty accordingly.
-
-    function levelFunc() {
-
-
-        switch (level.html()) {
-            case '1':
-                for (var i = 0, len = arr.length; i < len; i++) {
-                    arr[i].innerHTML = Math.floor((Math.random() * 150) + 1);
-                    result.html(arr[randomIndex[0]].innerHTML);
-                }
-                break;
-            case '2':
-                for (var i = 0, len = arr.length; i < len; i++) {
-                    arr[i].innerHTML = Math.floor((Math.random() * 300) + 1);
-                    result.html(arr[randomIndex[1]].innerHTML);
-                }
-                break;
-            case '3':
-                for (var i = 0, len = arr.length; i < len; i++) {
-                    arr[i].innerHTML = Math.floor((Math.random() * 450) + 1);
-                    result.html(arr[randomIndex[2]].innerHTML);
-                }
-                break;
-            case '4':
-                for (var i = 0, len = arr.length; i < len; i++) {
-                    arr[i].innerHTML = Math.floor((Math.random() * 1650) + 1);
-                    result.html(arr[randomIndex[3]].innerHTML);
-                }
-                break;
-            case '5':
-                for (var i = 0, len = arr.length; i < len; i++) {
-                    arr[i].innerHTML = Math.floor((Math.random() * 3400) + 1);
-                    result.html(arr[randomIndex[4]].innerHTML);
-                }
-                break;
-            case '6':
-                for (var i = 0, len = arr.length; i < len; i++) {
-                    arr[i].innerHTML = Math.floor((Math.random() * 6000) + 1);
-                    result.html(arr[randomIndex[5]].innerHTML);
-                }
-                break;
-            case '7':
-                for (var i = 0, len = arr.length; i < len; i++) {
-                    arr[i].innerHTML = Math.floor((Math.random() * 14000) + 1);
-                    result.html(arr[randomIndex[6]].innerHTML);
-                }
-                break;
-            case '8':
-                for (var i = 0, len = arr.length; i < len; i++) {
-                    arr[i].innerHTML = Math.floor((Math.random() * 17000) + 1);
-                    result.html(arr[randomIndex[7]].innerHTML);
-                }
-                break;
-            case '9':
-                for (var i = 0, len = arr.length; i < len; i++) {
-                    arr[i].innerHTML = Math.floor((Math.random() * 20000) + 1);
-                    result.html(arr[randomIndex[8]].innerHTML);
-                }
-                break;
-            case '10':
-                for (var i = 0, len = arr.length; i < len; i++) {
-                    arr[i].innerHTML = Math.floor((Math.random() * 100000) + 1);
-                    result.html(arr[randomIndex[9]].innerHTML);
-                }
-                break;
-            case '11':
-                for (var i = 0, len = arr.length; i < len; i++) {
-                    arr[i].innerHTML = Math.floor((Math.random() * 500000) + 1);
-                    result.html(arr[randomIndex[10]].innerHTML);
-                }
-                break;
-            case '12':
-                for (var i = 0, len = arr.length; i < len; i++) {
-                    arr[i].innerHTML = Math.floor((Math.random() * 1000000) + 1);
-                    result.html(arr[randomIndex[11]].innerHTML);
-                }
-                break;
-
-        }
-
-    }
-
     // Initializing the game.
+    Module.levelFunc();
 
 
     $('.wrapper div').on('click', function() {
-
         $(this).addClass('rotate');
 
-        // Checking whether we've found the right number by the "find" objective. If not, we're back to level 1 with unlimited timer.
+        switch (Module.level.html()) {
+            case '1':
+                Module.levelChange(this.innerHTML == Module.result.html(), 'https://fonts.googleapis.com/css?family=Rock Salt', 'https://fonts.googleapis.com/css?family=Vast Shadow', 'https://fonts.googleapis.com/css?family=Yeseva One', ['Rock Salt', 'Vast Shadow', 'Yeseva One'], 2, 20);
+                Module.successColor.call(this);
+                break;
+            case '2':
+                Module.levelChange(this.innerHTML == Module.result.html(), 'https://fonts.googleapis.com/css?family=Monofett', 'https://fonts.googleapis.com/css?family=Nosifer', 'https://fonts.googleapis.com/css?family=Over the Rainbow', ['Monofett', 'Nosifer', 'Over the Rainbow'], 3, 18);
+                Module.successColor.call(this);
 
-        if (this.innerHTML !== result.html()) {
-            clearInterval(t);
-            alert('Nope!');
-            $('.wrapper div').css({ 'font-family': 'serif'});
-            level.html('1');
-            timer.html('unlimited');
-            totalScore.html('0');
-            currentScore.html('0');
-            levelFunc();
-        } else if (level.html() == '1') {
+                break;
+            case '3':
+                Module.levelChange(this.innerHTML == Module.result.html(), 'https://fonts.googleapis.com/css?family=Armata', 'https://fonts.googleapis.com/css?family=Black Ops One', 'https://fonts.googleapis.com/css?family=Aladin', ['Armata', 'Black Ops One', 'Aladin'], 4, 15);
+                Module.successColor.call(this);
 
-            // If we've found the correct number, we improve farther in levels and difficulty. Each level will contain 1 of 3 random fonts.
+                break;
+            case '4':
+                Module.levelChange(this.innerHTML == Module.result.html(), 'https://fonts.googleapis.com/css?family=Alex Brush', 'https://fonts.googleapis.com/css?family=Allerta Stencil', 'https://fonts.googleapis.com/css?family=Amatic SC', ['Alex Brush', 'Allerta Stencil', 'Amatic SC'], 5, 13);
+                Module.successColor.call(this);
 
-            if (this.innerHTML == result.html()) {
-                $(this).css({ 'background': 'Chartreuse', 'color': 'red' });
-                setTimeout(function() {
-                    font1.attr('href', 'https://fonts.googleapis.com/css?family=Rock Salt');
-                    font2.attr('href', 'https://fonts.googleapis.com/css?family=Vast Shadow');
-                    font3.attr('href', 'https://fonts.googleapis.com/css?family=Yeseva One');
-                    fontArr = ['Rock Salt', 'Vast Shadow', 'Yeseva One'];
-                    
-                    $('.wrapper div').css({ 'background': 'blue', 'color': 'white', 'font-family': fontArr[Math.floor(Math.random() * 3)]});
-                    $('.wrapper div').toggleClass('rotate');
- 
-                    // After level 1 we initiate a timer and scores logic starts to scale.
-                    level.html('2');
-                    var count = 20,
-                        cScore = 0;
-                    t = setInterval(function() {
-                        timer.html(count);
-                        currentScore.html(cScore);
-                        count--;
-                        cScore++;
+                break;
+            case '5':
+                Module.levelChange(this.innerHTML == Module.result.html(), 'https://fonts.googleapis.com/css?family=Annie Use Your Telescope', 'https://fonts.googleapis.com/css?family=Arizonia', 'https://fonts.googleapis.com/css?family=Astloch', ['Annie Use Your Telescope', 'Arizonia', 'Astloch'], 6, 12);
+                Module.successColor.call(this);
 
-                        if (count < -1) {
-                            clearInterval(t);
-                            alert('Out of time! Back to level 1!');
-                            level.html('1');
-                            timer.html('unlimited');
-                            totalScore.html('0');
-                            currentScore.html('0');
-                            levelFunc();
-                        }
+                break;
+            case '6':
+                Module.levelChange(this.innerHTML == Module.result.html(), 'https://fonts.googleapis.com/css?family=Atomic Age', 'https://fonts.googleapis.com/css?family=Barrio', 'https://fonts.googleapis.com/css?family=Bonbon', ['Atomic Age', 'Barrio', 'Bonbon'], 7, 9);
+                Module.successColor.call(this);
 
+                break;
+            case '7':
+                Module.levelChange(this.innerHTML == Module.result.html(), 'https://fonts.googleapis.com/css?family=Bungee', 'https://fonts.googleapis.com/css?family=Bungee Outline', 'https://fonts.googleapis.com/css?family=Bungee Shade', ['Bungee', 'Bungee Outline', 'Bungee Shade'], 8, 8);
+                Module.successColor.call(this);
 
-                    }, 1000);
-                    levelFunc();
-                }, 3000);
+                break;
+            case '8':
+                Module.levelChange(this.innerHTML == Module.result.html(), 'https://fonts.googleapis.com/css?family=Butcherman', 'https://fonts.googleapis.com/css?family=Cabin Sketch', 'https://fonts.googleapis.com/css?family=Caesar Dressing', ['Butcherman', 'Cabin Sketch', 'Caesar Dressing'], 9, 7);
+                Module.successColor.call(this);
 
+                break;
+            case '9':
+                Module.levelChange(this.innerHTML == Module.result.html(), 'https://fonts.googleapis.com/css?family=Chathura', 'https://fonts.googleapis.com/css?family=Codystar', 'https://fonts.googleapis.com/css?family=Dr Sugiyama', ['Chathura', 'Codystar', 'Dr Sugiyama'], 10, 6);
+                Module.successColor.call(this);
+
+                break;
+            case '10':
+                Module.levelChange(this.innerHTML == Module.result.html(), 'https://fonts.googleapis.com/css?family=Ewert', 'https://fonts.googleapis.com/css?family=Fascinate', 'https://fonts.googleapis.com/css?family=Faster One', ['Ewert', 'Fascinate', 'Faster One'], 11, 5);
+                Module.successColor.call(this);
+
+                break;
+            case '11':
+                Module.levelChange(this.innerHTML == Module.result.html(), 'https://fonts.googleapis.com/css?family=Fredericka the Great', 'https://fonts.googleapis.com/css?family=Geostar', 'https://fonts.googleapis.com/css?family=Give You Glory', ['Fredericka the Great', 'Geostar', 'Give You Glory'], 12, 4);
+                Module.successColor.call(this);
+
+                break;
+            case '12':
+                Module.levelChange(this.innerHTML == Module.result.html(), 'https://fonts.googleapis.com/css?family=Hanalei', 'https://fonts.googleapis.com/css?family=Herr Von Muellerhoff', 'https://fonts.googleapis.com/css?family=League Script', ['Hanalei', 'Herr Von Muellerhoff', 'League Script'], 'Final Stage!', 3);
+                Module.successColor.call(this);
+
+                break;
+            case 'Final Stage!':
+                Module.complete(this.innerHTML == Module.result.html());
+                Module.successColor.call(this);
                 $('.wrapper div').toggleClass('rotate');
-            }
-
-        } else if (level.html() == '2') {
-            clearInterval(t);
-            timer.html('re-calculating...');
-
-            if (this.innerHTML == result.html()) {
-                $(this).css({ 'background': 'Chartreuse', 'color': 'red' });
-                setTimeout(function() {
-                    font1.attr('href', 'https://fonts.googleapis.com/css?family=Monofett');
-                    font2.attr('href', 'https://fonts.googleapis.com/css?family=Nosifer');
-                    font3.attr('href', 'https://fonts.googleapis.com/css?family=Over the Rainbow');
-                    fontArr = ['Monofett', 'Nosifer', 'Over the Rainbow'];
-                    $('.wrapper div').css({ 'background': 'blue', 'color': 'white', 'font-family': fontArr[Math.floor(Math.random() * 3)]});
-                    $('.wrapper div').toggleClass('rotate');
-                    totalScore.html(currentScore.html());
-                    level.html('3');
-                    var count = 18,
-                        cScore = 0;
-                    t = setInterval(function() {
-                        timer.html(count);
-                        currentScore.html(cScore);
-                        count--;
-                        cScore++;
-
-                        if (count < -1) {
-                            clearInterval(t);
-                            alert('Out of time! Back to level 1!');
-                            level.html('1');
-                            timer.html('unlimited');
-                            totalScore.html('0');
-                            currentScore.html('0');
-                            levelFunc();
-                        }
-
-                    }, 1000);
-                    levelFunc();
-                }, 3000);
-
-                $('.wrapper div').toggleClass('rotate');
-            }
-
-        } else if (level.html() == '3') {
-            clearInterval(t);
-            timer.html('re-calculating...');
-            if (this.innerHTML == result.html()) {
-
-                $(this).css({ 'background': 'Chartreuse', 'color': 'red' });
-                setTimeout(function() {
-                    font1.attr('href', 'https://fonts.googleapis.com/css?family=Armata');
-                    font2.attr('href', 'https://fonts.googleapis.com/css?family=Black Ops One');
-                    font3.attr('href', 'https://fonts.googleapis.com/css?family=Aladin');
-                    fontArr = ['Armata', 'Black Ops One', 'Aladin'];
-                    
-                    $('.wrapper div').css({ 'background': 'blue', 'color': 'white', 'font-family': fontArr[Math.floor(Math.random() * 3)]});
-                    $('.wrapper div').toggleClass('rotate');
-
-
-                    level.html('4');
-                    sum = Number(totalScore.html());
-                    sum2 = Number(currentScore.html());
-                    totalScore.html(sum + sum2);
-                    var count = 15,
-                        cScore = 0;
-                    t = setInterval(function() {
-                        timer.html(count);
-                        currentScore.html(cScore);
-                        count--;
-                        cScore++;
-
-                        if (count < -1) {
-                            clearInterval(t);
-                            alert('Out of time! Back to level 1!');
-                            level.html('1');
-                            timer.html('unlimited');
-                            totalScore.html('0');
-                            currentScore.html('0');
-                            levelFunc();
-                        }
-
-
-                    }, 1000);
-                    levelFunc();
-                }, 3000);
-
-                $('.wrapper div').toggleClass('rotate');
-            }
-
-        } else if (level.html() == '4') {
-            clearInterval(t);
-            timer.html('re-calculating...');
-            if (this.innerHTML == result.html()) {
-
-                $(this).css({ 'background': 'Chartreuse', 'color': 'red' });
-                setTimeout(function() {
-                    font1.attr('href', 'https://fonts.googleapis.com/css?family=Alex Brush');
-                    font2.attr('href', 'https://fonts.googleapis.com/css?family=Allerta Stencil');
-                    font3.attr('href', 'https://fonts.googleapis.com/css?family=Amatic SC');
-                    fontArr = ['Alex Brush', 'Allerta Stencil', 'Amatic SC'];
-                    $('.wrapper div').css({ 'background': 'blue', 'color': 'white', 'font-family': fontArr[Math.floor(Math.random() * 3)]});
-                    $('.wrapper div').toggleClass('rotate');
-                    level.html('5');
-                    sum = Number(totalScore.html());
-                    sum2 = Number(currentScore.html());
-                    totalScore.html(sum + sum2);
-                    var count = 13,
-                        cScore = 0;
-                    t = setInterval(function() {
-                        timer.html(count);
-                        currentScore.html(cScore);
-                        count--;
-                        cScore++;
-
-                        if (count < -1) {
-                            clearInterval(t);
-                            alert('Out of time! Back to level 1!');
-                            level.html('1');
-                            timer.html('unlimited');
-                            totalScore.html('0');
-                            currentScore.html('0');
-                            levelFunc();
-                        }
-
-
-                    }, 1000);
-                    levelFunc();
-                }, 3000);
-
-                $('.wrapper div').toggleClass('rotate');
-            }
-
-        } else if (level.html() == '5') {
-            clearInterval(t);
-            timer.html('re-calculating...');
-            if (this.innerHTML == result.html()) {
-
-                $(this).css({ 'background': 'Chartreuse', 'color': 'red' });
-                setTimeout(function() {
-                    font1.attr('href', 'https://fonts.googleapis.com/css?family=Annie Use Your Telescope');
-                    font2.attr('href', 'https://fonts.googleapis.com/css?family=Arizonia');
-                    font3.attr('href', 'https://fonts.googleapis.com/css?family=Astloch');
-                    fontArr = ['Annie Use Your Telescope', 'Arizonia', 'Astloch'];
-
-                    $('.wrapper div').css({ 'background': 'blue', 'color': 'white', 'font-family': fontArr[Math.floor(Math.random() * 3)]});
-                    $('.wrapper div').toggleClass('rotate');
-                    level.html('6');
-                    sum = Number(totalScore.html());
-                    sum2 = Number(currentScore.html());
-                    totalScore.html(sum + sum2);
-                    var count = 12,
-                        cScore = 0;
-                    t = setInterval(function() {
-                        timer.html(count);
-                        currentScore.html(cScore);
-                        count--;
-                        cScore++;
-
-                        if (count < -1) {
-                            clearInterval(t);
-                            alert('Out of time! Back to level 1!');
-                            level.html('1');
-                            timer.html('unlimited');
-                            totalScore.html('0');
-                            currentScore.html('0');
-                            levelFunc();
-                        }
-
-
-                    }, 1000);
-                    levelFunc();
-                }, 3000);
-
-                $('.wrapper div').toggleClass('rotate');
-            }
-
-        } else if (level.html() == '6') {
-            clearInterval(t);
-            timer.html('re-calculating...');
-            if (this.innerHTML == result.html()) {
-
-                $(this).css({ 'background': 'Chartreuse', 'color': 'red' });
-                setTimeout(function() {
-                    font1.attr('href', 'https://fonts.googleapis.com/css?family=Atomic Age');
-                    font2.attr('href', 'https://fonts.googleapis.com/css?family=Barrio');
-                    font3.attr('href', 'https://fonts.googleapis.com/css?family=Bonbon');
-                    fontArr = ['Atomic Age', 'Barrio', 'Bonbon'];
-
-                    $('.wrapper div').css({ 'background': 'blue', 'color': 'white', 'font-family': fontArr[Math.floor(Math.random() * 3)]});
-                    $('.wrapper div').toggleClass('rotate');
-                    level.html('7');
-                    sum = Number(totalScore.html());
-                    sum2 = Number(currentScore.html());
-                    totalScore.html(sum + sum2);
-                    var count = 9,
-                        cScore = 0;
-                    t = setInterval(function() {
-                        timer.html(count);
-                        currentScore.html(cScore);
-                        count--;
-                        cScore++;
-
-                        if (count < -1) {
-                            clearInterval(t);
-                            alert('Out of time! Back to level 1!');
-                            level.html('1');
-                            timer.html('unlimited');
-                            totalScore.html('0');
-                            currentScore.html('0');
-                            levelFunc();
-                        }
-
-
-                    }, 1000);
-                    levelFunc();
-                }, 3000);
-
-                $('.wrapper div').toggleClass('rotate');
-            }
-
-        } else if (level.html() == '7') {
-            clearInterval(t);
-            timer.html('re-calculating...');
-            if (this.innerHTML == result.html()) {
-
-                $(this).css({ 'background': 'Chartreuse', 'color': 'red' });
-                setTimeout(function() {
-                    font1.attr('href', 'https://fonts.googleapis.com/css?family=Bungee');
-                    font2.attr('href', 'https://fonts.googleapis.com/css?family=Bungee Outline');
-                    font3.attr('href', 'https://fonts.googleapis.com/css?family=Bungee Shade');
-                    fontArr = ['Bungee', 'Bungee Outline', 'Bungee Shade'];
-                    
-                    $('.wrapper div').css({ 'background': 'blue', 'color': 'white', 'font-family': fontArr[Math.floor(Math.random() * 3)]});
-                    $('.wrapper div').toggleClass('rotate');
-                    level.html('8');
-                    sum = Number(totalScore.html());
-                    sum2 = Number(currentScore.html());
-                    totalScore.html(sum + sum2);
-                    var count = 8,
-                        cScore = 0;
-                    t = setInterval(function() {
-                        timer.html(count);
-                        currentScore.html(cScore);
-                        count--;
-                        cScore++;
-
-                        if (count < -1) {
-                            clearInterval(t);
-                            alert('Out of time! Back to level 1!');
-                            level.html('1');
-                            timer.html('unlimited');
-                            totalScore.html('0');
-                            currentScore.html('0');
-                            levelFunc();
-                        }
-
-
-                    }, 1000);
-                    levelFunc();
-                }, 3000);
-
-                $('.wrapper div').toggleClass('rotate');
-            }
-
-        } else if (level.html() == '8') {
-            clearInterval(t);
-            timer.html('re-calculating...');
-            if (this.innerHTML == result.html()) {
-
-                $(this).css({ 'background': 'Chartreuse', 'color': 'red' });
-                setTimeout(function() {
-                    font1.attr('href', 'https://fonts.googleapis.com/css?family=Butcherman');
-                    font2.attr('href', 'https://fonts.googleapis.com/css?family=Cabin Sketch');
-                    font3.attr('href', 'https://fonts.googleapis.com/css?family=Caesar Dressing');
-                    fontArr = ['Butcherman', 'Cabin Sketch', 'Caesar Dressing'];
-                    
-                    $('.wrapper div').css({ 'background': 'blue', 'color': 'white', 'font-family': fontArr[Math.floor(Math.random() * 3)]});
-                    $('.wrapper div').toggleClass('rotate');
-                    level.html('9');
-                    sum = Number(totalScore.html());
-                    sum2 = Number(currentScore.html());
-                    totalScore.html(sum + sum2);
-                    var count = 7,
-                        cScore = 0;
-                    t = setInterval(function() {
-                        timer.html(count);
-                        currentScore.html(cScore);
-                        count--;
-                        cScore++;
-
-                        if (count < -1) {
-                            clearInterval(t);
-                            alert('Out of time! Back to level 1!');
-                            level.html('1');
-                            timer.html('unlimited');
-                            totalScore.html('0');
-                            currentScore.html('0');
-                            levelFunc();
-                        }
-
-
-                    }, 1000);
-                    levelFunc();
-                }, 3000);
-
-                $('.wrapper div').toggleClass('rotate');
-            }
-
-        } else if (level.html() == '9') {
-            clearInterval(t);
-            timer.html('re-calculating...');
-            if (this.innerHTML == result.html()) {
-
-                $(this).css({ 'background': 'Chartreuse', 'color': 'red' });
-                setTimeout(function() {
-                    font1.attr('href', 'https://fonts.googleapis.com/css?family=Chathura');
-                    font2.attr('href', 'https://fonts.googleapis.com/css?family=Codystar');
-                    font3.attr('href', 'https://fonts.googleapis.com/css?family=Dr Sugiyama');
-                    fontArr = ['Chathura', 'Codystar', 'Dr Sugiyama'];
-                    
-                    $('.wrapper div').css({ 'background': 'blue', 'color': 'white', 'font-family': fontArr[Math.floor(Math.random() * 3)]});
-                    $('.wrapper div').toggleClass('rotate');
-                    level.html('10');
-                    sum = Number(totalScore.html());
-                    sum2 = Number(currentScore.html());
-                    totalScore.html(sum + sum2);
-                    var count = 6,
-                        cScore = 0;
-                    t = setInterval(function() {
-                        timer.html(count);
-                        currentScore.html(cScore);
-                        count--;
-                        cScore++;
-
-                        if (count < -1) {
-                            clearInterval(t);
-                            alert('Out of time! Back to level 1!');
-                            level.html('1');
-                            timer.html('unlimited');
-                            totalScore.html('0');
-                            currentScore.html('0');
-                            levelFunc();
-                        }
-
-
-                    }, 1000);
-                    levelFunc();
-                }, 3000);
-
-                $('.wrapper div').toggleClass('rotate');
-            }
-
-        } else if (level.html() == '10') {
-            clearInterval(t);
-            timer.html('re-calculating...');
-            if (this.innerHTML == result.html()) {
-
-                $(this).css({ 'background': 'Chartreuse', 'color': 'red' });
-                setTimeout(function() {
-                    font1.attr('href', 'https://fonts.googleapis.com/css?family=Ewert');
-                    font2.attr('href', 'https://fonts.googleapis.com/css?family=Fascinate');
-                    font3.attr('href', 'https://fonts.googleapis.com/css?family=Faster One');
-                    fontArr = ['Ewert', 'Fascinate', 'Faster One'];
-                    
-                    $('.wrapper div').css({ 'background': 'blue', 'color': 'white', 'font-family': fontArr[Math.floor(Math.random() * 3)]});
-                    $('.wrapper div').toggleClass('rotate');
-                    level.html('11');
-                    sum = Number(totalScore.html());
-                    sum2 = Number(currentScore.html());
-                    totalScore.html(sum + sum2);
-                    var count = 5,
-                        cScore = 0;
-                    t = setInterval(function() {
-                        timer.html(count);
-                        currentScore.html(cScore);
-                        count--;
-                        cScore++;
-
-                        if (count < -1) {
-                            clearInterval(t);
-                            alert('Out of time! Back to level 1!');
-                            level.html('1');
-                            timer.html('unlimited');
-                            totalScore.html('0');
-                            currentScore.html('0');
-                            levelFunc();
-                        }
-
-
-                    }, 1000);
-                    levelFunc();
-                }, 3000);
-
-                $('.wrapper div').toggleClass('rotate');
-            }
-
-        } else if (level.html() == '11') {
-            clearInterval(t);
-            timer.html('re-calculating...');
-            if (this.innerHTML == result.html()) {
-
-                $(this).css({ 'background': 'Chartreuse', 'color': 'red' });
-                setTimeout(function() {
-                    font1.attr('href', 'https://fonts.googleapis.com/css?family=Fredericka the Great');
-                    font2.attr('href', 'https://fonts.googleapis.com/css?family=Geostar');
-                    font3.attr('href', 'https://fonts.googleapis.com/css?family=Give You Glory');
-                    fontArr = ['Fredericka the Great', 'Geostar', 'Give You Glory'];
-                    
-                    $('.wrapper div').css({ 'background': 'blue', 'color': 'white', 'font-family': fontArr[Math.floor(Math.random() * 3)]});
-                    $('.wrapper div').toggleClass('rotate');
-                    level.html('12');
-                    sum = Number(totalScore.html());
-                    sum2 = Number(currentScore.html());
-                    totalScore.html(sum + sum2);
-                    var count = 4,
-                        cScore = 0;
-                    t = setInterval(function() {
-                        timer.html(count);
-                        currentScore.html(cScore);
-                        count--;
-                        cScore++;
-
-                        if (count < -1) {
-                            clearInterval(t);
-                            alert('Out of time! Back to level 1!');
-                            level.html('1');
-                            timer.html('unlimited');
-                            totalScore.html('0');
-                            currentScore.html('0');
-                            levelFunc();
-                        }
-
-
-                    }, 1000);
-                    levelFunc();
-                }, 3000);
-
-                $('.wrapper div').toggleClass('rotate');
-            }
-
-        } else if (level.html() == '12') {
-            clearInterval(t);
-            timer.html('re-calculating...');
-            if (this.innerHTML == result.html()) {
-
-                $(this).css({ 'background': 'Chartreuse', 'color': 'red' });
-                setTimeout(function() {
-                    font1.attr('href', 'https://fonts.googleapis.com/css?family=Hanalei');
-                    font2.attr('href', 'https://fonts.googleapis.com/css?family=Herr Von Muellerhoff');
-                    font3.attr('href', 'https://fonts.googleapis.com/css?family=League Script');
-                    fontArr = ['Hanalei', 'Herr Von Muellerhoff', 'League Script'];
-                    
-                    $('.wrapper div').css({ 'background': 'blue', 'color': 'white', 'font-family': fontArr[Math.floor(Math.random() * 3)]});
-                    $('.wrapper div').toggleClass('rotate');
-                    level.html('Final Stage!');
-                    sum = Number(totalScore.html());
-                    sum2 = Number(currentScore.html());
-                    totalScore.html(sum + sum2);
-                    var count = 3,
-                        cScore = 0;
-                    t = setInterval(function() {
-                        timer.html(count);
-                        currentScore.html(cScore);
-                        count--;
-                        cScore++;
-
-                        if (count < -1) {
-                            clearInterval(t);
-                            alert('Out of time! Back to level 1!');
-                            level.html('1');
-                            timer.html('unlimited');
-                            totalScore.html('0');
-                            currentScore.html('0');
-                            levelFunc();
-                        }
-
-
-                    }, 1000);
-                    levelFunc();
-                }, 3000);
-
-                $('.wrapper div').toggleClass('rotate');
-            }
-
-        } else if (level.html() == 'Final Stage!') {
-            clearInterval(t);
-            if (this.innerHTML == result.html()) {
-
-                $(this).css({ 'background': 'Chartreuse', 'color': 'red' });
-                setTimeout(function() {
-                    $('.wrapper div').css({ 'background': 'blue', 'color': 'white' });
-                    $('.wrapper div').toggleClass('rotate');
-                    level.html('Game Complete!');
-                    result.html('Nothing else to find!');
-                    timer.html('You\'ve beated the time!');
-                }, 3000);
-
-                finish = totalScore.html();
-
-                $('.wrapper div').toggleClass('rotate');
-
-            if (Number(finish) < k) {
-                // If we finished the game in a lower time than the last top record, we'll store our name in a variable, display the new top record with our name.
-                name = prompt('New Record!!! Please fill your name below!');
-                setTimeout(function() {
-
-                record.html(name + ', ' + 'finished in ' + finish + ' seconds!');
-                // We save the new record into a file by using the method on line 39.
-                // In order to get our record string blurred, we have to make it editable + focused so we can blur it.
-                $(record).attr('contenteditable','true');
-                record.focus();
-                record.blur();
-                $(record).attr('contenteditable','false');
-
-                }, 2000);
-
-            }
-        
-            }
-
+                Module.level.html('Game Complete!');
+                Module.result.html('Nothing else to find!');
+                Module.timer.html('You\'ve beated the time!');
+                break;
         }
+
 
     });
 
-    // Made completely by Dennis Ilyaev.
+
+
+    // Made & rebuilt completely by Dennis Ilyaev.
+
 });
