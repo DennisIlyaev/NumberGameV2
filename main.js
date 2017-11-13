@@ -182,10 +182,12 @@ $(document).ready(function() {
         }
 
         function successColor() {
-            $(this).css({
-                'background': 'Chartreuse',
-                'color': 'red'
-            });
+            if (this.innerHTML == result.html()) {
+                $(this).css({
+                    'background': 'Chartreuse',
+                    'color': 'red'
+                });
+            }
         }
 
         record.blur(function() {
